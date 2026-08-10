@@ -16,8 +16,6 @@ module aes_axi_accelerator (
     output reg  [31:0] axi_rdata,
     output reg         axi_rvalid
 );
-    
-  
 
     // =========================================================
     // 1. MEMORY MAPPED REGISTERS
@@ -48,8 +46,9 @@ module aes_axi_accelerator (
             endcase
         end
     end
-// =========================================================
-    // 3. AXI READ LOGIC (FPGA -> CPU)
+    
+    // =========================================================
+    // 2. AXI READ LOGIC (FPGA -> CPU)
     // =========================================================
     always @(posedge S_AXI_ACLK) begin
         if (S_AXI_ARESETN == 1'b0) begin
@@ -70,10 +69,10 @@ module aes_axi_accelerator (
         end
     end
     // =========================================================
-    // 2. THE BACKPRESSURE ENGINE (The `ce` wire)
+    // 3. THE BACKPRESSURE ENGINE (The `ce` wire)
     // =========================================================
-    // The PS demands: "No pipeline stalls in steady-state, but 
-    // correct handling of backpressure."
+    // No pipeline stalls in steady-state, but 
+    // correct handling of backpressure.
     
     // If the CPU hasn't read the last block yet, or the AXI bus 
     // says "WAIT", we drop `ce` to 0. 
@@ -84,7 +83,7 @@ module aes_axi_accelerator (
     assign pipeline_ce = (slv_reg_control[0] == 1'b1) ? 1'b1 : 1'b0;
 
     // =========================================================
-    // 3. INSTANTIATING YOUR FACTORY
+    // 4. INSTANTIATING YOUR FACTORY
     // =========================================================
     aes_128_pipeline CIPHERSTREAM_CORE (
         .clk        (S_AXI_ACLK),
@@ -97,7 +96,7 @@ module aes_axi_accelerator (
     );
 
     // =========================================================
-    // 4. STATUS UPDATES
+    // 5. STATUS UPDATES
     // =========================================================
     always @(posedge S_AXI_ACLK) begin
         if (aes_valid_out) begin
